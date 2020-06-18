@@ -3,8 +3,8 @@ package aslog
 import (
 	"bytes"
 	"io/ioutil"
-	"net/http"
 
+	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/sqlite" // 这是正确的包
 )
@@ -40,7 +40,7 @@ type Option struct {
 
 // Init 使用此包 必须先初始化改
 func Init(o Option) (err error) {
-	db, err := gorm.Open(o.FilePath, o.FileName)
+	db, err := gorm.Open("sqlite3", o.FilePath+o.FileName)
 	if err != nil {
 		return
 	}
@@ -51,8 +51,8 @@ func Init(o Option) (err error) {
 
 // DB ...
 func (al AsLog) DB() (db *gorm.DB, err error) {
-	db, err := gorm.Open(al.Option.FilePath.FilePath, al.Option.FileName)
-	defer db.Close()
+	db, err = gorm.Open("sqlite3", al.Option.FilePath+al.Option.FileName)
+	// defer db.Close()
 	if err != nil {
 		return
 	}
@@ -60,13 +60,14 @@ func (al AsLog) DB() (db *gorm.DB, err error) {
 }
 
 // New Aslog
-func New(o Option) *Aslog {
-	return &AsLog{Option: &o}
+func New(o *Option) *AsLog {
+	return &AsLog{Option: o}
 }
 
 // Write 日志写入
-func (al AsLog) Write(r *http.Request, level Level, err error) error {
-	data, err := ioutil.ReadAll(r.Body)
+func (al AsLog) Write(c *gin.Context, level Level, errinfo string) (err error) {
+	var data []byte
+	data, err = ioutil.ReadAll(c.Request.Body)
 	if err != nil {
 		return
 	}
@@ -76,17 +77,21 @@ func (al AsLog) Write(r *http.Request, level Level, err error) error {
 		return
 	}
 	var hl HTTPLog
-	hl.status = r.Response.Status
 	hl.Body = string(data)
-	hl.Error = err.Error()
-	hl.Host = r.Host
-	hl.Level = level
-	hl.Method = r.Method
-	hl.Path = r.URL.RawPath
-	hl.RawQuery = r.URL.RawQuery
-	hl.Scheme = r.URL.Scheme
+	hl.Error = errinfo
+	hl.Host = c.Request.Host
+	hl.Level = uint(level)
+	hl.Method = c.Request.Method
+	hl.Path = c.Request.URL.EscapedPath()
+	hl.RawQuery = c.Request.URL.RawQuery
+	hl.Authorization = c.GetHeader("Authorization")
+	hl.ContentType = c.GetHeader("Content-Type")
+	hl.Cookie = c.GetHeader("Cookie")
+	hl.UserAgent = c.Request.UserAgent()
+	hl.IP = c.ClientIP()
+	hl.Origin = c.GetHeader("Origin")
 	body := ioutil.NopCloser(bytes.NewBuffer(data))
-	r.Body = body
+	c.Request.Body = body
 	err = db.Create(&hl).Error
 	if err != nil {
 		return

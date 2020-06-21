@@ -6,7 +6,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/sqlite" // 这是正确的包
+	_ "github.com/jinzhu/gorm/dialects/mysql"  // mysql
+	_ "github.com/jinzhu/gorm/dialects/sqlite" // sqlite
 )
 
 // Level 日志级别 Debug、info、warn、error、fatal panic
@@ -32,15 +33,37 @@ type AsLog struct {
 	Option *Option
 }
 
+// Mysql struct
+type Mysql struct {
+	Host     string `json:"host"`
+	Port     string `json:"port"`
+	Name     string `json:"name"`
+	User     string `json:"user"`
+	Password string `json:"password"`
+}
+
 // Option 配置选项
 type Option struct {
-	FilePath string
-	FileName string
+	Mysql     Mysql
+	DataDrive string // mysql,sqlite3
+	FilePath  string
+	FileName  string
 }
 
 // Init 使用此包 必须先初始化改
 func Init(o Option) (err error) {
-	db, err := gorm.Open("sqlite3", o.FilePath+o.FileName)
+	var db *gorm.DB
+	if o.DataDrive == "mysql" {
+		db, err = gorm.Open("mysql", o.Mysql.User+":"+o.Mysql.Password+"@tcp("+o.Mysql.Host+":"+o.Mysql.Port+")/"+o.Mysql.Name+"?charset=utf8mb4&parseTime=True&loc=Local")
+		if err != nil {
+			return
+		}
+	} else {
+		db, err = gorm.Open("sqlite3", o.FilePath+o.FileName)
+		if err != nil {
+			return
+		}
+	}
 	if err != nil {
 		return
 	}
@@ -51,8 +74,17 @@ func Init(o Option) (err error) {
 
 // DB ...
 func (al AsLog) DB() (db *gorm.DB, err error) {
-	db, err = gorm.Open("sqlite3", al.Option.FilePath+al.Option.FileName)
-	// defer db.Close()
+	if al.Option.DataDrive == "mysql" {
+		db, err = gorm.Open("mysql", al.Option.Mysql.User+":"+al.Option.Mysql.Password+"@tcp("+al.Option.Mysql.Host+":"+al.Option.Mysql.Port+")/"+al.Option.Mysql.Name+"?charset=utf8mb4&parseTime=True&loc=Local")
+		if err != nil {
+			return
+		}
+	} else {
+		db, err = gorm.Open("sqlite3", al.Option.FilePath+al.Option.FileName)
+		if err != nil {
+			return
+		}
+	}
 	if err != nil {
 		return
 	}

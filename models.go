@@ -11,15 +11,15 @@ type HTTPLog struct {
 	Host          string `gorm:"index"`
 	Path          string `gorm:"index"`
 	Method        string `gorm:"index"`
-	Body          string `gorm:"type:varchar(65535)"`
-	RawQuery      string `gorm:"type:varchar(65535)"`
+	Body          string `gorm:"type:varchar(15535)"`
+	RawQuery      string `gorm:"type:varchar(15535)"`
 	status        int
-	Error         string `gorm:"type:varchar(65535)"` // 错误描述
-	Authorization string `gorm:"type:varchar(65535)"`
-	ContentType   string `gorm:"type:varchar(65535)"`
-	Origin        string `gorm:"type:varchar(65535)"`
-	Cookie        string `gorm:"type:varchar(65535)"`
-	UserAgent     string `gorm:"type:varchar(65535)"`
+	Error         string `gorm:"type:varchar(15535)"` // 错误描述
+	Authorization string `gorm:"type:varchar(15535)"`
+	ContentType   string `gorm:"type:varchar(15535)"`
+	Origin        string `gorm:"type:varchar(15535)"`
+	Cookie        string `gorm:"type:varchar(15535)"`
+	UserAgent     string `gorm:"type:varchar(15535)"`
 	IP            string
 }
 

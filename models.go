@@ -11,15 +11,15 @@ type HTTPLog struct {
 	Host          string `gorm:"index"`
 	Path          string `gorm:"index"`
 	Method        string `gorm:"index"`
-	Body          string `gorm:"size:2048"`
-	RawQuery      string `gorm:"size:2048"`
+	Body          string `gorm:"type:varchar(65535)"`
+	RawQuery      string `gorm:"type:varchar(65535)"`
 	status        int
-	Error         string `gorm:"size:2048"` // 错误描述
-	Authorization string `gorm:"size:2048"`
-	ContentType   string `gorm:"size:2048"`
-	Origin        string `gorm:"size:2048"`
-	Cookie        string `gorm:"size:2048"`
-	UserAgent     string `gorm:"size:2048"`
+	Error         string `gorm:"type:varchar(65535)"` // 错误描述
+	Authorization string `gorm:"type:varchar(65535)"`
+	ContentType   string `gorm:"type:varchar(65535)"`
+	Origin        string `gorm:"type:varchar(65535)"`
+	Cookie        string `gorm:"type:varchar(65535)"`
+	UserAgent     string `gorm:"type:varchar(65535)"`
 	IP            string
 }
 
@@ -29,7 +29,7 @@ type ErrLog struct {
 	Level      uint `gorm:"index"` // 1,2,3,4,5,6,7,8,9
 	HTTPLogID  uint `gorm:"index"`
 	HTTPStatus int
-	Error      string `gorm:"size:2048"` // 错误描述
+	Error      string `gorm:"type:varchar(255)"` // 错误描述
 }
 
 // Model ...

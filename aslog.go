@@ -46,8 +46,8 @@ type Mysql struct {
 type Option struct {
 	Mysql     Mysql
 	DataDrive string // mysql,sqlite3
-	FilePath  string
-	FileName  string
+	FilePath  string // DataDrive == sqlite3
+	FileName  string // DataDrive == sqlite3
 }
 
 // Init 使用此包 必须先初始化改
